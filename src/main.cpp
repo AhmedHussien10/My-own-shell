@@ -3,15 +3,25 @@
 using namespace std;
 
 int main() {
-  // Flush after every std::cout / std:cerr
+  // Flush after every std::cout / std::cerr
   std::cout << std::unitbuf;
   std::cerr << std::unitbuf;
 
-  // TODO: Uncomment the code below to pass the first stage
+  string command;
+
+  // Print the prompt once before the first input
   std::cout << "$ ";
 
-  string command;
-  getline(cin , command);
+  while (getline(cin, command)) {
+    if (command.empty()) {
+      cout << "$ ";
+      continue;
+    }
 
-  cout<<command<<": command not found"<<flush;
+    cout << command << ": command not found" << std::endl;
+
+    cout << "$ ";
+  }
+
+  return 0;
 }
