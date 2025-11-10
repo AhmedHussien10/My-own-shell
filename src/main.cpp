@@ -41,14 +41,14 @@ int main() {
             if (space != string::npos) {
                 string func = command.substr(space + 1); // argument after type
 
-                if (func == "echo" || func == "exit") {
+                if (func == "echo" || func == "exit" || func == "type") {
                     cout << func << " is a shell builtin\n";
                 } else {
                     cout << func << ": not found\n";
                 }
             }
         }
-        
+
     else
       cout << command << ": command not found" << std::endl;
     cout << "$ ";
