@@ -35,6 +35,20 @@ int main() {
       
       cout<<"\n";
     }
+
+   else if (command.find("type") == 0) {
+            size_t space = command.find(' ');
+            if (space != string::npos) {
+                string func = command.substr(space + 1); // argument after type
+
+                if (func == "echo" || func == "exit") {
+                    cout << func << " is a shell builtin\n";
+                } else {
+                    cout << func << ": not found\n";
+                }
+            }
+        }
+        
     else
       cout << command << ": command not found" << std::endl;
     cout << "$ ";
