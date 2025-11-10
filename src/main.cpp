@@ -23,7 +23,20 @@ int main() {
       break;
     }
     
-    cout << command << ": command not found" << std::endl;
+    else if (command.find("echo") == 0)
+    {
+      size_t space = command.find(' ');
+
+      if (space!=string::npos)
+      {
+        string toprint = command.substr(space + 1);
+        cout<<toprint;
+      }
+      
+      cout<<"\n";
+    }
+    else
+      cout << command << ": command not found" << std::endl;
     cout << "$ ";
   }
 
