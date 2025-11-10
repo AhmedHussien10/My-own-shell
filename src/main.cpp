@@ -18,8 +18,12 @@ int main() {
       continue;
     }
 
+    if (command == "exit 0")
+    {
+      break;
+    }
+    
     cout << command << ": command not found" << std::endl;
-
     cout << "$ ";
   }
 
