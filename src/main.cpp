@@ -9,6 +9,7 @@
 #include <Windows.h> // Only on Windows
 #else
 #include <unistd.h> // For POSIX systems (Linux/macOS)
+#include <sys/wait.h> // For wait() function on Unix systems
 #endif
 
 using namespace std;
@@ -53,29 +54,39 @@ void search_executable_in_path(const string& command) {
 }
 
 void run_external_program(const string& command, const vector<string>& args) {
-    string full_command = command;
+    vector<const char*> c_args;
+    c_args.push_back(command.c_str());
 
-    // Add arguments to the command string
+    // Convert each argument to const char* and add it to the vector
     for (const string& arg : args) {
-        full_command += " " + arg;
+        c_args.push_back(arg.c_str());
     }
 
+    c_args.push_back(nullptr); // Null-terminate the array of arguments
+
 #ifdef _WIN32
-    int result = system(full_command.c_str());
+    // Windows: use system to run the command
+    int result = system(command.c_str());
 #else
+    // Unix-like: use fork and execvp
     pid_t pid = fork();
 
     if (pid == 0) {
-        execvp(command.c_str(), const_cast<char* const*>(args.data()));
-        exit(0);
+        execvp(command.c_str(), const_cast<char* const*>(c_args.data()));
+        exit(0); // execvp will replace the current process, so this is just a fallback.
+    } else if (pid > 0) {
+        wait(NULL); // Parent process waits for the child to finish
     } else {
-        wait(NULL);
+        cerr << "Fork failed!" << endl;
     }
 #endif
 
+    // If execvp or system fails
+#ifdef _WIN32
     if (result != 0) {
         cerr << "Error: Unable to execute " << command << endl;
     }
+#endif
 }
 
 int main() {
