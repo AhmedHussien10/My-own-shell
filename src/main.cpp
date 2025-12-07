@@ -46,7 +46,8 @@ void search_executable_in_path(const string& command) {
         if (fs::exists(full_path) && fs::is_regular_file(full_path)) {
             // Check execute permissions (for Unix-like systems)
             if ((fs::status(full_path).permissions() & fs::perms::owner_exec) != fs::perms::none) {
-                cout << command << " is " << full_path << endl;
+                // Print the command and its full path without quotes
+                cout << command << " is " << full_path.string() << endl;
                 return;
             }
         }
