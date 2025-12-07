@@ -4,7 +4,12 @@
 #include <string>
 #include <cstdlib>
 #include <filesystem>
-#include <Windows.h> // for system()
+
+#ifdef _WIN32
+#include <Windows.h> // Only on Windows
+#else
+#include <unistd.h> // For POSIX systems (Linux/macOS)
+#endif
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -13,11 +18,11 @@ vector<string> split_path(const string &str, char delimiter) {
     vector<string> our_path{};
     stringstream ss(str);
     string token;
-    
+
     while (getline(ss, token, delimiter)) {
         our_path.push_back(token);
     }
-    
+
     return our_path;
 }
 
@@ -29,7 +34,7 @@ void search_executable_in_path(const string& command) {
         return;
     }
 
-    vector<string> path_dirs = split_path(path_env, ';'); // Use ';' for Windows PATH separator
+    vector<string> path_dirs = split_path(path_env, (sizeof(char) == 1 && *path_env == '/') ? ':' : ';'); // ':' for Unix and ';' for Windows
 
     for (const auto& dir : path_dirs) {
         fs::path full_path = fs::path(dir) / command;
@@ -49,14 +54,24 @@ void search_executable_in_path(const string& command) {
 
 void run_external_program(const string& command, const vector<string>& args) {
     string full_command = command;
-    
+
     // Add arguments to the command string
     for (const string& arg : args) {
         full_command += " " + arg;
     }
 
-    // Execute the command using system() in Windows
+#ifdef _WIN32
     int result = system(full_command.c_str());
+#else
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        execvp(command.c_str(), const_cast<char* const*>(args.data()));
+        exit(0);
+    } else {
+        wait(NULL);
+    }
+#endif
 
     if (result != 0) {
         cerr << "Error: Unable to execute " << command << endl;
