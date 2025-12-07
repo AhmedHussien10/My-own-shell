@@ -73,8 +73,9 @@ int main() {
             continue;
         }
 
-        if (command == "exit 0") {
-            break;
+        // Handle the 'exit' command to terminate the shell
+        if (command == "exit") {
+            break;  // Exit the shell
         }
 
         // Handle the 'echo' command
