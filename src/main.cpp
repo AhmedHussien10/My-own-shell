@@ -31,7 +31,7 @@ void search_executable_in_path(const string& command) {
     }
 
     // Split the PATH into directories (use os-agnostic separator)
-    vector<string> path_dirs = split_path(path_env, ';'); // Use ';' delimiter for Windows PATH (adjust for Unix-style if needed)
+    vector<string> path_dirs = split_path(path_env, ':'); // ':' is Unix-style, change if needed for Windows
 
     // Iterate through each directory in PATH
     for (const auto& dir : path_dirs) {
