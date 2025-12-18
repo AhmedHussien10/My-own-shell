@@ -42,6 +42,20 @@ void search_executable_in_path(const string& command) {
     cout << command << ": not found\n";
 }
 
+bool exist (const string &dir) {
+    fs::path our_path(dir);
+     return fs::exists(our_path) && fs::is_directory(our_path);
+}
+
+bool change_dir(std::string dir) {
+    dir = expand_home(dir);
+
+    if (chdir(dir.c_str()) != 0) {
+        cerr << "cd: " << dir << ": No such file or directory" <<endl;
+        return false;
+    }
+    return true;
+}
 void external_program(const string &command) {
     vector<string> tokens = split_path(command, ' ');
     if (tokens.empty())
@@ -59,6 +73,7 @@ void external_program(const string &command) {
         waitpid(pid, nullptr, 0);
     }
 }
+
 
 int main() {
     cout << unitbuf;
