@@ -21,6 +21,29 @@ vector<string> split_path(const string &str, char delimiter) {
     return our_path;
 }
 
+string expand_home(const string& path) {
+    if (!path.empty() && path[0] == '~') {
+        const char* home = getenv("HOME");
+        if (!home) return "";
+        return string(home) + path.substr(1);
+    }
+    return path;
+}
+
+bool exist(const string &dir) {
+    fs::path our_path(dir);
+    return fs::exists(our_path) && fs::is_directory(our_path);
+}
+
+bool change_dir(string dir) {
+    dir = expand_home(dir);
+    if (chdir(dir.c_str()) != 0) {
+        cerr << "cd: " << dir << ": No such file or directory" << endl;
+        return false;
+    }
+    return true;
+}
+
 void search_executable_in_path(const string& command) {
     const char* path_env = getenv("PATH");
     if (!path_env) {
@@ -42,20 +65,6 @@ void search_executable_in_path(const string& command) {
     cout << command << ": not found\n";
 }
 
-bool exist (const string &dir) {
-    fs::path our_path(dir);
-     return fs::exists(our_path) && fs::is_directory(our_path);
-}
-
-bool change_dir(std::string dir) {
-    dir = expand_home(dir);
-
-    if (chdir(dir.c_str()) != 0) {
-        cerr << "cd: " << dir << ": No such file or directory" <<endl;
-        return false;
-    }
-    return true;
-}
 void external_program(const string &command) {
     vector<string> tokens = split_path(command, ' ');
     if (tokens.empty())
@@ -73,7 +82,6 @@ void external_program(const string &command) {
         waitpid(pid, nullptr, 0);
     }
 }
-
 
 int main() {
     cout << unitbuf;
@@ -96,7 +104,7 @@ int main() {
             size_t space = command.find(' ');
             if (space != string::npos) {
                 string func = command.substr(space + 1);
-                if (func == "echo" || func == "exit" || func == "type" || func == "pwd") {
+                if (func == "echo" || func == "exit" || func == "type" || func == "pwd" || func == "cd") {
                     cout << func << " is a shell builtin\n";
                 } else {
                     search_executable_in_path(func);
@@ -106,6 +114,16 @@ int main() {
             char cwd[1024];
             if (getcwd(cwd, sizeof(cwd)) != nullptr) {
                 cout << cwd << "\n";
+            }
+        } else if (command.rfind("cd", 0) == 0) {
+            size_t space = command.find(' ');
+            string dir = (space != string::npos) ? command.substr(space + 1) : "";
+            if (dir.empty()) {
+                const char* home = getenv("HOME");
+                if (!home) cerr << "cd: HOME not set\n";
+                else change_dir(home);
+            } else {
+                change_dir(dir);
             }
         } else {
             external_program(command);
